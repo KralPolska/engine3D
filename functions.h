@@ -27,4 +27,5 @@ public:
     static void initBinds();
     static void drawFloorAndSky();
     static void timer(int value);
+    static void WHERETHEFUCKISLIGHT();
 };

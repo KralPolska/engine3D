@@ -1,17 +1,30 @@
 ﻿#include "object3d.h"
 
 void object3d::setColor(float r, float g, float b) {
-    color[0] = r/255;
-    color[1] = g/255;
-    color[2] = b/255;
+    this->color[0] = r/255;
+    this->color[1] = g/255;
+    this->color[2] = b/255;
 }
 
-primitive_Circle::primitive_Circle(double radius) : radius(radius) {}
+void object3d::applyMaterial() const{
+    glDisable(GL_LIGHTING);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
+    this->material.apply();
+    glEnable(GL_LIGHTING);
+}
+
+primitive_Circle::primitive_Circle(double radius, Material type) : radius(radius) {
+    this->material = getMaterial(type);
+}
+primitive_Circle::primitive_Circle(double radius) : radius(radius) {
+    this->material = getMaterial(Material::Default);
+}
 
 void primitive_Circle::draw() const {
     const int slices = 30;
     const int stacks = 30;
-    glColor3fv(color);
+    applyMaterial();
 
     glBegin(GL_TRIANGLES);
 
@@ -40,17 +53,35 @@ void primitive_Circle::draw() const {
             double y4 = position.getY() + radius * std::sin(phi2) * std::sin(theta2);
             double z4 = position.getZ() + radius * std::cos(phi2);
 
+            point3d normal1 = { x1 - position.getX(), y1 - position.getY(), z1 - position.getZ() };
+            normal1 = normal1.normalize();
+            point3d normal2 = { x2 - position.getX(), y2 - position.getY(), z2 - position.getZ() };
+            normal2 = normal2.normalize();
+            point3d normal3 = { x3 - position.getX(), y3 - position.getY(), z3 - position.getZ() };
+            normal3 = normal3.normalize();
+            point3d normal4 = { x4 - position.getX(), y4 - position.getY(), z4 - position.getZ() };
+            normal4 = normal4.normalize();
+
             // Draw two triangles
+            glNormal3d(normal1.getX(), normal1.getY(), normal1.getZ());
             glVertex3d(x1, y1, z1);
+
+            glNormal3d(normal2.getX(), normal2.getY(), normal2.getZ());
             glVertex3d(x2, y2, z2);
+
+            glNormal3d(normal4.getX(), normal4.getY(), normal4.getZ());
             glVertex3d(x4, y4, z4);
 
+            glNormal3d(normal1.getX(), normal1.getY(), normal1.getZ());
             glVertex3d(x1, y1, z1);
+
+            glNormal3d(normal4.getX(), normal4.getY(), normal4.getZ());
             glVertex3d(x4, y4, z4);
+
+            glNormal3d(normal3.getX(), normal3.getY(), normal3.getZ());
             glVertex3d(x3, y3, z3);
         }
     }
-
     glEnd();
 }
 
@@ -58,13 +89,18 @@ void primitive_Circle::setPosition(const point3d& newPosition) {
     position = newPosition;
 }
 
+primitive_Box::primitive_Box(double length, double width, double height, Material type)
+    : depth(length), width(width), height(height) {
+    this->material = getMaterial(type);
+}
 primitive_Box::primitive_Box(double length, double width, double height)
-    : depth(length), width(width), height(height) {}
+    : depth(length), width(width), height(height) {
+    this->material = getMaterial(Material::Default);
+}
 
 void primitive_Box::draw() const {
-    glColor3fv(color);
+    applyMaterial(); // Zastosowanie właściwości materiału
 
-    // Obliczenia dla współrzędnych prostopadłościanu
     double halfWidth = width / 2.0;
     double halfHeight = height / 2.0;
     double halfDepth = depth / 2.0;
@@ -79,40 +115,50 @@ void primitive_Box::draw() const {
     glBegin(GL_QUADS);
 
     // Przednia ściana
+    glNormal3f(0.0f, 0.0f, 1.0f);
     glVertex3d(xMin, yMin, zMin);
     glVertex3d(xMax, yMin, zMin);
     glVertex3d(xMax, yMax, zMin);
     glVertex3d(xMin, yMax, zMin);
 
     // Tylna ściana
+    glNormal3f(0.0f, 0.0f, -1.0f);
     glVertex3d(xMin, yMin, zMax);
     glVertex3d(xMax, yMin, zMax);
     glVertex3d(xMax, yMax, zMax);
     glVertex3d(xMin, yMax, zMax);
 
-    // Pozostałe ściany
+    // Lewa ściana
+    glNormal3f(-1.0f, 0.0f, 0.0f);
     glVertex3d(xMin, yMin, zMin);
     glVertex3d(xMin, yMax, zMin);
     glVertex3d(xMin, yMax, zMax);
     glVertex3d(xMin, yMin, zMax);
 
+    // Prawa ściana
+    glNormal3f(1.0f, 0.0f, 0.0f);
     glVertex3d(xMax, yMin, zMin);
     glVertex3d(xMax, yMax, zMin);
     glVertex3d(xMax, yMax, zMax);
     glVertex3d(xMax, yMin, zMax);
 
-    glVertex3d(xMin, yMin, zMin);
-    glVertex3d(xMax, yMin, zMin);
-    glVertex3d(xMax, yMin, zMax);
-    glVertex3d(xMin, yMin, zMax);
-
+    // Górna ściana
+    glNormal3f(0.0f, 1.0f, 0.0f);
     glVertex3d(xMin, yMax, zMin);
     glVertex3d(xMax, yMax, zMin);
     glVertex3d(xMax, yMax, zMax);
     glVertex3d(xMin, yMax, zMax);
+
+    // Dolna ściana
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glVertex3d(xMin, yMin, zMin);
+    glVertex3d(xMax, yMin, zMin);
+    glVertex3d(xMax, yMin, zMax);
+    glVertex3d(xMin, yMin, zMax);
 
     glEnd();
 }
+
 
 void primitive_Box::setPosition(const point3d& newPosition) {
     position = newPosition;

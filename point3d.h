@@ -29,6 +29,7 @@ public:
 	std::vector<double> getPosition();
 	void setPosition(point3d point);
 
+public:
 	point3d operator+(const point3d& other) const
 	{
 		return point3d(x + other.x, y + other.y, z + other.z);

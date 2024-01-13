@@ -9,11 +9,16 @@ unsigned char functions::iterationCount = 0;
 
 extern camera myCamera;
 
+bool enableLight = false;
+
 void functions::init() {
+    glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glutMotionFunc(mouseMotionHandler);
     glutSetCursor(GLUT_CURSOR_NONE);
     glutTimerFunc(1000, timer, 0);
+    //drawFloorAndSky();
+    WHERETHEFUCKISLIGHT();
 }
 
 void functions::drawCube() {
@@ -49,9 +54,15 @@ void functions::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-
     myCamera.applyView();
-    drawFloorAndSky();
+
+    myCamera.sun.setPosition(point3d(10.0, 0.09f, 0.0));  // Ustaw pozycję słońca
+    myCamera.sun.setColor(1.0f, 1.0f, 3.0f, 0.3f);         // Ustaw kolor światła słońca (biały
+    myCamera.sun.applyLight();
+
+    //glUseProgram do shaderów i cieniowania
+    //glew podpiąć
+
     drawObjects();
     drawCube();
 
@@ -63,6 +74,11 @@ void functions::reshape(int width, int height) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0, (double)width / (double)height, 0.1, 100.0);
+
+    myCamera.sun.applyLight();
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void functions::keyboardHandler(unsigned char key, int x, int y) {
@@ -145,16 +161,16 @@ void functions::addRandomObject() {
     float b = static_cast<float>(rand()) / 255;
 
     // Losowy wybór klasy obiektu
-    int randomClass = rand() % 2+1;  // Zakładam, że masz dwie klasy dziedziczące po object3d
+    int randomClass = rand() % 2 + 1;  // Zakładam, że masz dwie klasy dziedziczące po object3d
     std::cout << randomClass << " ";
     std::shared_ptr<object3d> newObject;
 
     // Tworzenie obiektu na podstawie losowego wyboru
     if (randomClass == 1) {
-        newObject = std::make_shared<primitive_Circle>(radius);
+        newObject = std::make_shared<primitive_Circle>(radius,Material::Glass);
     }
     else if (randomClass == 2) {
-        newObject = std::make_shared<primitive_Box>(1.0, 3.0, 1.0);
+        newObject = std::make_shared<primitive_Box>(1.0, 3.0, 1.0,Material::Glass);
     }
 
     newObject->setPosition({ randomX, randomY, randomZ });
@@ -200,28 +216,29 @@ void functions::initBinds()
         addRandomObject();
         });
     keyBinder.bindKey('p', addRandomObject);
+    keyBinder.bindKey('l', [&]()
+        {
+            enableLight = !enableLight;
+            myCamera.sun.enable(enableLight);
+        });
 }
 
 void functions::drawFloorAndSky() {
     // Ustaw kolor nieba (np. niebieski)
-    glColor3f(0.5, 0.7, 1.0);  // RGB: (0.5, 0.7, 1.0) - przykładowy kolor nieba
+    std::shared_ptr<object3d> floor = std::make_shared<primitive_Box>(20, 20, 0.2,Material::Sand);
+    floor->setColor(0, 255, 0);
+    floor->setPosition({ 0,-1,0 });
+    objects3D.push_back(floor);
 
-    glBegin(GL_QUADS);
-    glVertex3f(-10.0, 50.0, -10.0);
-    glVertex3f(-10.0, 50.0, 10.0);
-    glVertex3f(10.0, 50.0, 10.0);
-    glVertex3f(10.0, 50.0, -10.0);
-    glEnd();
+    std::shared_ptr<object3d> sky = std::make_shared<primitive_Box>(20, 20, 0.2,Material::Water);
+    sky->setColor(0, 10, 200);
+    sky->setPosition({ 0,20,0 });
+    objects3D.push_back(sky);
 
-    // Ustaw kolor podłogi (np. zielony)
-    glColor3f(0.0, 0.3, 0.0);  // RGB: (0.0, 1.0, 0.0) - przykładowy kolor podłogi
-
-    glBegin(GL_QUADS);
-    glVertex3f(-10.0, -1.0, -10.0);
-    glVertex3f(-10.0, -1.0, 10.0);
-    glVertex3f(10.0, -1.0, 10.0);
-    glVertex3f(10.0, -1.0, -10.0);
-    glEnd();
+    std::shared_ptr<object3d> klocek = std::make_shared<primitive_Box>(1, 1, 1,Material::Metal);
+    klocek->setColor(255, 0, 0);
+    klocek->setPosition({ 10,1,0 });
+    //objects3D.push_back(klocek);
 }
 
 void functions::timer(int value)
@@ -231,5 +248,25 @@ void functions::timer(int value)
 
     if (iterationCount < 10) {
         glutTimerFunc(1000, timer, 0);
+    }
+}
+
+void functions::WHERETHEFUCKISLIGHT()
+{
+
+    for (int i = -25; i < 25; i+=2)
+    {
+        std::shared_ptr<object3d> kolo = std::make_shared<primitive_Circle>(1.0, Material::Water);
+        kolo->setColor(255, 255, 0);
+        kolo->setPosition(point3d(i, 1.0, 0));
+        objects3D.push_back(kolo);  
+        std::shared_ptr<object3d> kolo2 = std::make_shared<primitive_Circle>(1.0, Material::Water);
+        kolo2->setColor(0, 255, 255);
+        kolo2->setPosition(point3d(0, 1.0, i));
+        objects3D.push_back(kolo2);        
+        std::shared_ptr<object3d> kolo3 = std::make_shared<primitive_Circle>(1.0, Material::Water);
+        kolo3->setColor(255, 0, 255);
+        kolo3->setPosition(point3d(0, i, 0));
+        objects3D.push_back(kolo3);
     }
 }

@@ -21,7 +21,8 @@ int main(int argc, char** argv) {
     myCamera.setCamera(initialPos, initialLook, initialUp);
 
     myFunctions.initBinds();
-
+    glEnable(GL_LIGHTING);
+    glShadeModel(GL_SMOOTH);
     glutDisplayFunc(myFunctions.display);
     glutReshapeFunc(myFunctions.reshape);
     glutKeyboardFunc(myFunctions.keyboardHandler);

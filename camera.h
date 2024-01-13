@@ -1,5 +1,6 @@
 #pragma once
 #include "point3d.h"
+#include "LightSource.h"
 #include <GL/freeglut.h>
 class camera
 {
@@ -10,6 +11,8 @@ private:
 	int lastMouseX;
 	int lastMouseY;
 	double sensitivity;
+public:
+	LightSource sun;
 
 public:
 	camera();
