@@ -8,9 +8,10 @@ class object3d
 public:
 	virtual void draw() const = 0;
 	virtual void setPosition(const point3d& position) = 0;
-    void setColor(float r, float g, float b);
+    void setColor(float r, float g, float b, float a);
+    virtual point3d getPosition() = 0;
 protected:
-    float color[3] = {1.0f, 1.0f, 1.0f};
+    float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     objectMaterial material;
     void applyMaterial() const;
 };
@@ -25,6 +26,7 @@ public:
     primitive_Circle(double radius);
     void draw() const override;
     void setPosition(const point3d& position) override;
+    point3d getPosition();
 };
 
 class primitive_Box : public object3d
@@ -37,4 +39,5 @@ public:
     primitive_Box(double length, double width, double height);
     void draw() const override;
     void setPosition(const point3d& position) override;
+    point3d getPosition();
 };

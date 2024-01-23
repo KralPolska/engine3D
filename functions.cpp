@@ -14,11 +14,11 @@ bool enableLight = false;
 void functions::init() {
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND); //T
     glutMotionFunc(mouseMotionHandler);
     glutSetCursor(GLUT_CURSOR_NONE);
     glutTimerFunc(1000, timer, 0);
-    //drawFloorAndSky();
-    WHERETHEFUCKISLIGHT();
+    drawFloorAndSky();
 }
 
 void functions::drawCube() {
@@ -56,7 +56,7 @@ void functions::display() {
 
     myCamera.applyView();
 
-    myCamera.sun.setPosition(point3d(10.0, 0.09f, 0.0));  // Ustaw pozycję słońca
+    myCamera.sun.setPosition(point3d(10.0, 1.0f, 0.0));  // Ustaw pozycję słońca
     myCamera.sun.setColor(1.0f, 1.0f, 3.0f, 0.3f);         // Ustaw kolor światła słońca (biały
     myCamera.sun.applyLight();
 
@@ -65,7 +65,7 @@ void functions::display() {
 
     drawObjects();
     drawCube();
-
+    WHERETHEFUCKISLIGHT();
     glutSwapBuffers();
 }
 
@@ -145,21 +145,19 @@ void functions::passiveMotionHandler(int x, int y) {
     glutPostRedisplay();  // Wymuszenie ponownego rysowania
 }
 
-double randDouble(double min, double max) {
-    return min + static_cast<double>(rand()) / RAND_MAX * (max - min);
-}
 void functions::addRandomObject() {
     srand(time(NULL));
     double radius = 0.5; // Możesz dostosować promień do własnych preferencji
-    double randomX = randDouble(-5.0, 5.0);
-    double randomY = randDouble(-1.0, 1.0);
-    double randomZ = randDouble(-5.0, 5.0);
+    double randomX = rand() % 20 - 10;
+    double randomY = rand() % 10+2;
+    double randomZ = rand() % 20 - 10;
+    std::cout << "\n[" << randomX << " | " << randomY << " | " << randomZ << "]\n";
 
     // Random color
     float r = static_cast<float>(rand()) / 255;
     float g = static_cast<float>(rand()) / 255;
     float b = static_cast<float>(rand()) / 255;
-
+    float a = rand() % 99 + 1;
     // Losowy wybór klasy obiektu
     int randomClass = rand() % 2 + 1;  // Zakładam, że masz dwie klasy dziedziczące po object3d
     std::cout << randomClass << " ";
@@ -174,7 +172,7 @@ void functions::addRandomObject() {
     }
 
     newObject->setPosition({ randomX, randomY, randomZ });
-    newObject->setColor(r, g, b);
+    newObject->setColor(r, g, b, a);
     objects3D.push_back(newObject);
 }
 
@@ -226,17 +224,17 @@ void functions::initBinds()
 void functions::drawFloorAndSky() {
     // Ustaw kolor nieba (np. niebieski)
     std::shared_ptr<object3d> floor = std::make_shared<primitive_Box>(20, 20, 0.2,Material::Sand);
-    floor->setColor(0, 255, 0);
+    floor->setColor(0, 255, 0, 1.0f);
     floor->setPosition({ 0,-1,0 });
     objects3D.push_back(floor);
 
     std::shared_ptr<object3d> sky = std::make_shared<primitive_Box>(20, 20, 0.2,Material::Water);
-    sky->setColor(0, 10, 200);
+    sky->setColor(0, 10, 200, 1.0f);
     sky->setPosition({ 0,20,0 });
     objects3D.push_back(sky);
 
     std::shared_ptr<object3d> klocek = std::make_shared<primitive_Box>(1, 1, 1,Material::Metal);
-    klocek->setColor(255, 0, 0);
+    klocek->setColor(255, 0, 0, 1.0f);
     klocek->setPosition({ 10,1,0 });
     //objects3D.push_back(klocek);
 }
@@ -253,20 +251,58 @@ void functions::timer(int value)
 
 void functions::WHERETHEFUCKISLIGHT()
 {
+    //for (int i = -25; i < 25; i+=2)
+    //{
+    //    std::shared_ptr<object3d> kolo = std::make_shared<primitive_Circle>(1.0, Material::Water);
+    //    kolo->setColor(255, 255, 0);
+    //    kolo->setPosition(point3d(i, 1.0, 0));
+    //    objects3D.push_back(kolo);  
+    //    std::shared_ptr<object3d> kolo2 = std::make_shared<primitive_Circle>(1.0, Material::Water);
+    //    kolo2->setColor(0, 255, 255);
+    //    kolo2->setPosition(point3d(0, 1.0, i));
+    //    objects3D.push_back(kolo2);        
+    //    std::shared_ptr<object3d> kolo3 = std::make_shared<primitive_Circle>(1.0, Material::Water);
+    //    kolo3->setColor(255, 0, 255);
+    //    kolo3->setPosition(point3d(0, i, 0));
+    //    objects3D.push_back(kolo3);
+    //}
+        //std::shared_ptr<object3d> krechax = std::make_shared<primitive_Box>(30, 0.1, 0.1,Material::Glass);
+        //std::shared_ptr<object3d> krechay = std::make_shared<primitive_Box>(0.1, 0.1, 30, Material::Glass);
+        //std::shared_ptr<object3d> krechaz = std::make_shared<primitive_Box>(0.1, 30, 0.1,Material::Glass);
+        //krechax->setColor(255, 0, 0);
+        //krechay->setColor(0, 255, 0);
+        //krechaz->setColor(0, 0, 255);
 
-    for (int i = -25; i < 25; i+=2)
-    {
-        std::shared_ptr<object3d> kolo = std::make_shared<primitive_Circle>(1.0, Material::Water);
-        kolo->setColor(255, 255, 0);
-        kolo->setPosition(point3d(i, 1.0, 0));
-        objects3D.push_back(kolo);  
-        std::shared_ptr<object3d> kolo2 = std::make_shared<primitive_Circle>(1.0, Material::Water);
-        kolo2->setColor(0, 255, 255);
-        kolo2->setPosition(point3d(0, 1.0, i));
-        objects3D.push_back(kolo2);        
-        std::shared_ptr<object3d> kolo3 = std::make_shared<primitive_Circle>(1.0, Material::Water);
-        kolo3->setColor(255, 0, 255);
-        kolo3->setPosition(point3d(0, i, 0));
-        objects3D.push_back(kolo3);
-    }
+        //krechax->setPosition({ 0,0,-15 });
+        //krechay->setPosition({ 0,-15,0 });
+        //krechaz->setPosition({ -15,0,0 });
+
+        //objects3D.push_back(krechax);
+        //objects3D.push_back(krechay);
+        //objects3D.push_back(krechaz);
+
+        glPushAttrib(GL_ENABLE_BIT);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+
+        glBegin(GL_LINES);
+
+        // Red X axis
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(5, 0.0f, 0.0f);
+
+        // Green Y axis
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 5, 0.0f);
+
+        // Blue Z axis
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 5);
+
+        glEnd();
+
+        glPopAttrib();
 }

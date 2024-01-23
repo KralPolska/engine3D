@@ -1,10 +1,35 @@
 ﻿#include "object3d.h"
 
-void object3d::setColor(float r, float g, float b) {
-    this->color[0] = r/255;
-    this->color[1] = g/255;
-    this->color[2] = b/255;
+void object3d::setColor(float r, float g, float b, float a) {
+    if (r < 0.0f)
+        r *= -1;
+    if (g < 0.0f)
+        g *= -1;
+    if (b < 0.0f)
+        b *= -1;
+    if (a < 0.0f)
+        a *= -1;
+
+    if (r > 1.0f)
+        r /= 255;
+
+    if (g > 1.0f)
+        g /= 255;
+
+    if (b > 1.0f)
+        b /= 255;
+
+    if (a > 1.0f && a <= 100.0f)
+        a /= 100;
+    else if (a > 100.f)
+        a /= 255;
+
+    this->color[0] = r;
+    this->color[1] = g;
+    this->color[2] = b;
+    this->color[3] = a;
 }
+
 
 void object3d::applyMaterial() const{
     glDisable(GL_LIGHTING);
@@ -89,6 +114,11 @@ void primitive_Circle::setPosition(const point3d& newPosition) {
     position = newPosition;
 }
 
+point3d primitive_Circle::getPosition()
+{
+    return position;
+}
+
 primitive_Box::primitive_Box(double length, double width, double height, Material type)
     : depth(length), width(width), height(height) {
     this->material = getMaterial(type);
@@ -162,4 +192,9 @@ void primitive_Box::draw() const {
 
 void primitive_Box::setPosition(const point3d& newPosition) {
     position = newPosition;
+}
+
+point3d primitive_Box::getPosition()
+{
+    return position;
 }

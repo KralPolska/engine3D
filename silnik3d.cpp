@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(myFunctions.keyboardHandler);
     glutMotionFunc(myFunctions.mouseMotionHandler);
     glutPassiveMotionFunc(myFunctions.passiveMotionHandler);
-
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR); //T
     glutTimerFunc(10000, myFunctions.timer, 0);
 
     glutMainLoop();
