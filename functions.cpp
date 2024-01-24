@@ -11,6 +11,8 @@ extern camera myCamera;
 
 bool enableLight = false;
 
+
+
 void functions::init() {
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
@@ -19,6 +21,7 @@ void functions::init() {
     glutSetCursor(GLUT_CURSOR_NONE);
     glutTimerFunc(1000, timer, 0);
     drawFloorAndSky();
+
 }
 
 void functions::drawCube() {
@@ -171,6 +174,7 @@ void functions::addRandomObject() {
         newObject = std::make_shared<primitive_Box>(1.0, 3.0, 1.0,Material::Glass);
     }
 
+    newObject->id = iterationCount;
     newObject->setPosition({ randomX, randomY, randomZ });
     newObject->setColor(r, g, b, a);
     objects3D.push_back(newObject);
@@ -178,8 +182,13 @@ void functions::addRandomObject() {
 
 void functions::drawObjects()
 {
+    double z_speed = 0.02;
     for (const auto& obj : objects3D)
+    {
+        if (obj->id == 21)
+            obj->rotate(0.1, { 0,1,0 });
         obj->draw();
+    }
 }
 
 void functions::initBinds()
@@ -236,7 +245,8 @@ void functions::drawFloorAndSky() {
     std::shared_ptr<object3d> klocek = std::make_shared<primitive_Box>(1, 1, 1,Material::Metal);
     klocek->setColor(255, 0, 0, 1.0f);
     klocek->setPosition({ 10,1,0 });
-    //objects3D.push_back(klocek);
+    klocek->id = 21;
+    objects3D.push_back(klocek);
 }
 
 void functions::timer(int value)

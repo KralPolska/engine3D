@@ -41,15 +41,26 @@ void object3d::applyMaterial() const{
 
 primitive_Circle::primitive_Circle(double radius, Material type) : radius(radius) {
     this->material = getMaterial(type);
+    this->rotation = 0;
+    this->o_scale = 1;
+    this->rotationVector = { 0,0,0 };
 }
 primitive_Circle::primitive_Circle(double radius) : radius(radius) {
     this->material = getMaterial(Material::Default);
+    this->rotation = 0;
+    this->o_scale = 1;
+    this->rotationVector = { 0,0,0 };
 }
 
 void primitive_Circle::draw() const {
     const int slices = 30;
     const int stacks = 30;
     applyMaterial();
+
+    glPushMatrix(); // Zapisz obecne przekształcenia
+    glTranslatef(position.getX(), position.getY(), position.getZ());
+    glRotated(rotation, rotationVector.getX(), rotationVector.getY(), rotationVector.getZ()); // Obrót
+    glScaled(o_scale, o_scale, o_scale); // Skalowanie
 
     glBegin(GL_TRIANGLES);
 
@@ -108,6 +119,7 @@ void primitive_Circle::draw() const {
         }
     }
     glEnd();
+    glPopMatrix();
 }
 
 void primitive_Circle::setPosition(const point3d& newPosition) {
@@ -119,21 +131,68 @@ point3d primitive_Circle::getPosition()
     return position;
 }
 
+void primitive_Circle::rotate(double angle, const point3d& axis) {
+    this->rotation += angle;
+    if (rotation > 360)
+        rotation -= 360;
+    this->rotationVector = axis;
+}
+
+void primitive_Circle::translate(const point3d& translation) {
+    this->position += translation;
+}
+
+void primitive_Circle::scale(double scale)
+{
+    this->o_scale *= scale;
+}
+
+void primitive_Circle::rescale(double scale)
+{
+    this->o_scale = scale;
+}
+
+void primitive_Circle::resize(double depth, double width, double height)
+{
+    this->radius = depth;
+}
+
+void primitive_Circle::resize(double radius)
+{
+    this->radius = radius;
+}
+
+void primitive_Circle::size(double size)
+{
+    this->radius += size;
+}
+
+void primitive_Circle::size(double depth, double width, double height)
+{
+    this->radius += depth;
+}
+
 primitive_Box::primitive_Box(double length, double width, double height, Material type)
     : depth(length), width(width), height(height) {
     this->material = getMaterial(type);
+    this->rotation = 0;
+    this->rotationVector = { 0,0,0 };
+    this->o_scale = 1;
 }
 primitive_Box::primitive_Box(double length, double width, double height)
     : depth(length), width(width), height(height) {
     this->material = getMaterial(Material::Default);
+    this->rotation = 0;
+    this->rotationVector = { 0,0,0 };
+    this->o_scale = 1;
 }
 
 void primitive_Box::draw() const {
     applyMaterial(); // Zastosowanie właściwości materiału
 
-    double halfWidth = width / 2.0;
-    double halfHeight = height / 2.0;
-    double halfDepth = depth / 2.0;
+    double halfWidth = (width * o_scale) / 2.0;
+    double halfHeight = (height * o_scale) / 2.0;
+    double halfDepth = (depth * o_scale) / 2.0;
 
     double xMin = position.getX() - halfWidth;
     double xMax = position.getX() + halfWidth;
@@ -141,6 +200,12 @@ void primitive_Box::draw() const {
     double yMax = position.getY() + halfHeight;
     double zMin = position.getZ() - halfDepth;
     double zMax = position.getZ() + halfDepth;
+
+    glPushMatrix();
+    glTranslatef(position.getX(), position.getY(), position.getZ());
+    glRotated(rotation, rotationVector.getX(), rotationVector.getY(), rotationVector.getZ());
+    glTranslatef(-position.getX(), -position.getY(), -position.getZ());
+    glScaled(o_scale, o_scale, o_scale);
 
     glBegin(GL_QUADS);
 
@@ -187,6 +252,8 @@ void primitive_Box::draw() const {
     glVertex3d(xMin, yMin, zMax);
 
     glEnd();
+
+    glPopMatrix();
 }
 
 
@@ -197,4 +264,54 @@ void primitive_Box::setPosition(const point3d& newPosition) {
 point3d primitive_Box::getPosition()
 {
     return position;
+}
+
+void primitive_Box::rotate(double angle, const point3d& axis) {
+    this->rotation += angle;
+    if (rotation > 360)
+        rotation -= 360;
+    this->rotationVector = axis;
+}
+
+void primitive_Box::translate(const point3d& translation) {
+    this->position += translation;
+}
+
+void primitive_Box::scale(double scale)
+{
+    this->o_scale *= scale;
+}
+
+void primitive_Box::rescale(double scale)
+{
+    this->o_scale = scale;
+}
+
+void primitive_Box::resize(double depth, double width, double height)
+{
+    this->depth = depth;
+    this->width = width;
+    this->height = height;
+}
+
+void primitive_Box::resize(double radius)
+{
+    this->depth = radius;
+    this->width = radius;
+    this->height = radius;
+}
+
+void primitive_Box::size(double depth, double width, double height)
+{
+    this->depth += depth;
+    this->width += width;
+    this->height += height;
+}
+
+void primitive_Box::size(double size)
+{
+    this->depth += size;
+    this->width += size;
+    this->height += size;
+
 }
